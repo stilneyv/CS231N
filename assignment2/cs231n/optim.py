@@ -40,7 +40,7 @@ def sgd(w, dw, config=None):
     if config is None:
         config = {}
     config.setdefault("learning_rate", 1e-2)
-
+    
     w -= config["learning_rate"] * dw
     return w, config
 
@@ -69,7 +69,9 @@ def sgd_momentum(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    # Momentum update
+    v = config['momentum'] * v - config['learning_rate'] * dw # integrate velocity
+    next_w = w + v # integrate position
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -107,7 +109,8 @@ def rmsprop(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    config['cache'] = config['decay_rate'] * config['cache'] + (1 - config['decay_rate']) * dw**2
+    next_w = w - config['learning_rate'] * dw / (np.sqrt(config['cache']) + config['epsilon'])
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -151,8 +154,14 @@ def adam(w, dw, config=None):
     # using it in any calculations.                                           #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
+    
+    # t is your iteration counter going from 1 to infinity
+    config['t'] += 1
+    config['m'] = config['beta1']*config['m'] + (1-config['beta1'])*dw
+    mt = config['m'] / (1-config['beta1']**config['t'])
+    config['v'] = config['beta2']*config['v'] + (1-config['beta2'])*(dw**2)
+    vt = config['v'] / (1-config['beta2']**config['t'])
+    next_w = w - config['learning_rate'] * mt / (np.sqrt(vt) + config['epsilon'])
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
