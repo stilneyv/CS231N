@@ -116,7 +116,7 @@ class ThreeLayerConvNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        z1, crp_cache, = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
+        z1, crp_cache = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
         z2, afr_cache = affine_relu_forward(z1, W2, b2)
         scores, af_cache = affine_forward(z2, W3, b3)
          

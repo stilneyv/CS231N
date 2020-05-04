@@ -274,18 +274,15 @@ def batchnorm_backward(dout, cache):
     gamma, x, sample_mean, sample_var, eps, x_hat = cache
     m, n = x.shape
     # from the computation graph:
-    dx_1 = gamma * dout
-    dx_2b = np.sum((x - sample_mean) * dx_1, axis=0)
-    dx_2a = ((sample_var + eps) ** -0.5) * dx_1
-    dx_3b = (-1/2) * ((sample_var + eps) ** -1.5) * dx_2b
-    dx_4b = dx_3b # for clarity
-    dx_5b = np.ones(np.shape(x)) / m * dx_4b
-    dx_6b = 2 * (x - sample_mean) * dx_5b
-    dx_7a = dx_6b + dx_2a 
-    dx_7b = dx_6b + dx_2a 
-    dx_8b = -1 * np.sum(dx_7b, axis=0)
-    dx_9b = np.ones(np.shape(x)) / m * dx_8b
-    dx = dx_9b + dx_7a
+    dx_hat = gamma * dout
+    dvarA = ((sample_var + eps) ** -0.5) * dx_hat
+    dvarB = np.sum((x - sample_mean) * dx_hat, axis=0)
+    dvarC = (-1/2) * ((sample_var + eps) ** -1.5) * dvarB
+    dmuA  = np.ones(np.shape(x)) / m * dvarC
+    dmuB = 2 * (x - sample_mean) * dmuA
+    dmuC = -1 * np.sum(dmuB + dvarA, axis=0)
+    davg = np.ones(np.shape(x)) / m * dmuC
+    dx = davg + dmuB + dvarA
 
     dgamma = np.sum(dout * x_hat, axis=0)
     dbeta = np.sum(dout, axis=0)
@@ -830,7 +827,7 @@ def spatial_batchnorm_backward(dout, cache):
     # want to reshape to N x H x W x C, then batch normalize
     dout_reorg = np.transpose(dout, (0, 2, 3, 1))
     dout_final = np.reshape(dout_reorg, (-1, C))
-    dx, dgamma, dbeta = batchnorm_backward(dout_final, cache)
+    dx, dgamma, dbeta = batchnorm_backward_alt(dout_final, cache)
     # reshape to original dims
     dx = np.reshape(dx, (N, H, W, C))
     dx = np.transpose(dx, (0,3,1,2))
